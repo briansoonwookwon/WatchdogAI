@@ -1,3 +1,5 @@
+import json
+from tabulate import tabulate
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split
 
@@ -38,3 +40,26 @@ def plot_history(loss_train, loss_val, acc_train, acc_val):
     ax[1].set_ylabel("Accuracy")
     ax[1].legend()
     plt.show()
+
+def print_history(history_path):
+    with open(history_path, "r") as f:
+        history = json.load(f)
+    headers = ["Epoch", "Train Loss", "Val Loss", "Train Acc", "Val Acc"]
+    table = []
+    for i, (tl, vl, ta, va) in enumerate(zip(
+            history["train_loss"],
+            history["val_loss"],
+            history["train_acc"],
+            history["val_acc"]), start=1):
+        mark = "*" if i == history["best_epoch"] else ""
+        table.append([
+            f"{i}{mark}",
+            f"{tl:.4f}",
+            f"{vl:.4f}",
+            f"{ta:.4f}",
+            f"{va:.4f}"
+        ])
+
+    print(tabulate(table, headers=headers, tablefmt="github"))
+    print(f"\nBest val acc: {history['best_val_acc']:.4f} (Epoch {history['best_epoch']})")
+    print(f"Saved model: {history['model_path']}")

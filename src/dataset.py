@@ -15,9 +15,11 @@ class PosterDataset(Dataset):
             if img.endswith('.jpg'):
                 self.samples.append((os.path.join(nonposter_dir, img), 0))
 
-        if transform is "default":
+        if transform == "default":
             print("Using default transform")
             self.transform = transforms.Compose([
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomResizedCrop(224),
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],

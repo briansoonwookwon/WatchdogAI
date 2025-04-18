@@ -57,36 +57,14 @@ def evaluate(model, data_loader, criterion):
     accuracy = total_correct / total_samples
     return avg_loss, accuracy
 
-def test(model, test_loader, criterion):
-    model.eval()
-    total_loss = 0.0
-    total_correct = 0
-    total_samples = 0
-
-    with torch.no_grad():
-        for images, labels in test_loader:
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs = model(images)
-            labels = labels.float().unsqueeze(1)
-            loss = criterion(outputs, labels)
-            total_loss += loss.item() * images.size(0)
-            preds = (torch.sigmoid(outputs) >= 0.5)
-            total_correct += torch.sum(preds == labels.byte()).item()
-            total_samples += images.size(0)
-
-    avg_loss = total_loss / total_samples
-    accuracy = total_correct / total_samples
-    print(f"Test Loss: {avg_loss:.4f}, Test Accuracy: {accuracy:.4f}")
-    return avg_loss, accuracy
-
-def train(model, train_loader, val_loader, criterion, optimizer, epochs):
+def train(model, train_loader, val_loader, criterion, optimizer, epochs, patience=5):
     model.to(device)
 
     best_val_acc = 0.0
     best_epoch = 0
     loss_history_train, loss_history_val = [], []
     acc_history_train, acc_history_val = [], []
+    epochs_no_improve = 0
 
     # Set up folder to save the best model
     save_dir = "models"
@@ -110,7 +88,14 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs):
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_epoch = epoch
+            epochs_no_improve = 0
             torch.save(model.state_dict(), os.path.join(run_folder, "best_model.pth"))
+        else:
+            epochs_no_improve += 1
+        
+        if epochs_no_improve >= patience:
+            print(f"Early stopping at epoch {epoch+1}")
+            break
 
         clear_output(wait=True)
         plot_history(loss_history_train, loss_history_val, acc_history_train, acc_history_val)
@@ -127,7 +112,7 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs):
         "train_acc":  acc_history_train,
         "val_acc":    acc_history_val,
         "best_val_acc": best_val_acc,
-        "best_epoch":   best_epoch + 1,  # 1-based
+        "best_epoch":   best_epoch + 1,
         "model_path":   os.path.join(run_folder, "best_model.pth")
     }
     history_path = os.path.join(run_folder, "history.json")
@@ -135,3 +120,26 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs):
         json.dump(history, f, indent=4)
     print(f"History saved to {history_path}")
     return history
+
+def test(model, test_loader, criterion):
+    model.eval()
+    total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
+
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+            outputs = model(images)
+            labels = labels.float().unsqueeze(1)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item() * images.size(0)
+            preds = (torch.sigmoid(outputs) >= 0.5)
+            total_correct += torch.sum(preds == labels.byte()).item()
+            total_samples += images.size(0)
+
+    avg_loss = total_loss / total_samples
+    accuracy = total_correct / total_samples
+    print(f"Test Loss: {avg_loss:.4f}, Test Accuracy: {accuracy:.4f}")
+    return avg_loss, accuracy
