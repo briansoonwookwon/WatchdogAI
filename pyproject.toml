@@ -5,7 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "boto3>=1.37.36",
     "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.6",
+    "jupyter>=1.1.1",
+    "requests>=2.32.3",
     "streamlit>=1.44.1",
+    "tensorflow-datasets>=4.9.8",
     "torch>=2.6.0",
+    "torchvision>=0.21.0",
 ]
