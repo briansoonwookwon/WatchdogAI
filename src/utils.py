@@ -1,23 +1,49 @@
 import json
+import torch
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split
 
+from src.dataset import PosterDataset
 
-def split_data(dataset, batch_size=32, train_size=0.8):
-    dataset_size = len(dataset)
-    train_size = int(0.8 * dataset_size)
-    val_size = int(0.1 * dataset_size)
-    test_size = dataset_size - train_size - val_size
 
-    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+def split_data(root_dir, batch_size=32, train_size=0.8):
+    full_dataset = PosterDataset(root_dir)
+
+    dataset_size = len(full_dataset.samples)
+    train_count = int(dataset_size * train_size)
+    val_count = (dataset_size - train_count) // 2
+    test_count = dataset_size - train_count - val_count
+
+    all_samples = full_dataset.samples.copy()
+
+    generator = torch.Generator().manual_seed(621)
+
+    train_indices, val_indices, test_indices = random_split(
+        range(dataset_size), 
+        [train_count, val_count, test_count],
+        generator=generator
+    )
+
+    train_dataset = PosterDataset(root_dir, train=True)
+    train_dataset.samples = [all_samples[i] for i in train_indices]
+    
+    val_dataset = PosterDataset(root_dir, train=False)
+    val_dataset.samples = [all_samples[i] for i in val_indices]
+    
+    test_dataset = PosterDataset(root_dir, train=False)
+    test_dataset.samples = [all_samples[i] for i in test_indices]
+
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
 
-    print("{:<10} {:<10} {:<10}".format("Train", "Val", "Test"))
-    print("{:<10} {:<10} {:<10}".format(len(train_dataset), len(val_dataset), len(test_dataset)))
-    print("{:<10} {:<10} {:<10}".format(len(train_loader), len(val_loader), len(test_loader)))
+    headers = ["", "Train", "Val", "Test"]
+    table = [
+        ["Samples", len(train_dataset), len(val_dataset), len(test_dataset)],
+        ["Batches", len(train_loader), len(val_loader), len(test_loader)]
+    ]
+    print(tabulate(table, headers=headers))
     return train_loader, val_loader, test_loader
 
 def plot_history(loss_train, loss_val, acc_train, acc_val):
@@ -60,6 +86,6 @@ def print_history(history_path):
             f"{va:.4f}"
         ])
 
-    print(tabulate(table, headers=headers, tablefmt="github"))
+    print(tabulate(table, headers=headers))
     print(f"\nBest val acc: {history['best_val_acc']:.4f} (Epoch {history['best_epoch']})")
     print(f"Saved model: {history['model_path']}")

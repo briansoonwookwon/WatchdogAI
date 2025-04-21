@@ -57,8 +57,12 @@ def evaluate(model, data_loader, criterion):
     accuracy = total_correct / total_samples
     return avg_loss, accuracy
 
-def train(model, train_loader, val_loader, criterion, optimizer, epochs, patience=5):
+def train(model, train_loader, val_loader, criterion, optimizer, scheduler, epochs, patience=5):
     model.to(device)
+
+    # determine model type and base save directory
+    model_type = model.__class__.__name__
+    save_dir = os.path.join("models", model_type)
 
     best_val_acc = 0.0
     best_epoch = 0
@@ -66,8 +70,6 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs, patienc
     acc_history_train, acc_history_val = [], []
     epochs_no_improve = 0
 
-    # Set up folder to save the best model
-    save_dir = "models"
     run_num = 1
     run_folder = os.path.join(save_dir, f"run_{run_num}")
     while os.path.exists(run_folder):
@@ -78,6 +80,7 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs, patienc
     for epoch in range(epochs):
         train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer)
         val_loss, val_acc = evaluate(model, val_loader, criterion)
+        scheduler.step(val_loss)
 
         loss_history_train.append(train_loss)
         loss_history_val.append(val_loss)
