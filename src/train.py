@@ -122,13 +122,14 @@ def train(model, train_loader, val_loader, criterion, optimizer, epochs, patienc
     return history
 
 def test(model, test_loader, criterion):
+    model.to(device)
     model.eval()
     total_loss = 0.0
     total_correct = 0
     total_samples = 0
 
     with torch.no_grad():
-        for images, labels in test_loader:
+        for images, labels in tqdm(test_loader, desc="Testing", leave=False):
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images)
@@ -141,5 +142,5 @@ def test(model, test_loader, criterion):
 
     avg_loss = total_loss / total_samples
     accuracy = total_correct / total_samples
-    print(f"Test Loss: {avg_loss:.4f}, Test Accuracy: {accuracy:.4f}")
+    # print(f"Test Loss: {avg_loss:.4f}, Test Accuracy: {accuracy:.4f}")
     return avg_loss, accuracy

@@ -1,13 +1,40 @@
 import torch
 import torch.nn as nn
 
-class BinaryCNN(nn.Module):
+class Simple3BlockCNN(nn.Module):
+    def __init__(self):
+        super(Simple3BlockCNN, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),  # for RGB images
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2),  # reduces spatial dimensions by 2
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2)
+        )
+        # After 3 poolings: 224 / 2 / 2 / 2 = 28
+        self.classifier = nn.Sequential(
+            nn.Linear(128 * 28 * 28, 256),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, 1)  # Binary output
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)  # flatten the tensor
+        x = self.classifier(x)
+        return x
+
+class BNDropout3BlockCNN(nn.Module):
     """
     Simple CNN for binary classification.
     Input: (B, 3, 224, 224) → Output: (B, 1)
     """
     def __init__(self, num_classes: int = 1, dropout_rate: float = 0.5) -> None:
-        super(BinaryCNN, self).__init__()
+        super(BNDropout3BlockCNN, self).__init__()
         self.features = nn.Sequential(
             # conv block 1
             nn.Conv2d(in_channels=3,    out_channels=32,  kernel_size=3, stride=1, padding=1, bias=False),
