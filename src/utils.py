@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, random_split
 from src.dataset import PosterDataset
 
 
-def split_data(root_dir, batch_size=32, train_size=0.8):
+def split_data(root_dir, batch_size=32, train_size=0.8, workers=4):
     full_dataset = PosterDataset(root_dir)
 
     dataset_size = len(full_dataset.samples)
@@ -34,9 +34,9 @@ def split_data(root_dir, batch_size=32, train_size=0.8):
     test_dataset = PosterDataset(root_dir, train=False)
     test_dataset.samples = [all_samples[i] for i in test_indices]
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=workers)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=workers)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=workers)
 
     headers = ["", "Train", "Val", "Test"]
     table = [
