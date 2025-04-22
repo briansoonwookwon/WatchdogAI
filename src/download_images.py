@@ -35,7 +35,7 @@ non_poster_ids = list(all_ids - set(poster_ids))
 print(f"Found {len(non_poster_ids)} non-poster images.")
 
 def download_image(image_id, label, split, base_dir):
-    subdir = "poster" if label == 1 else "nonposter"
+    subdir = "true" if label == 1 else "false"
     download_dir = os.path.join(base_dir, split, subdir)
     os.makedirs(download_dir, exist_ok=True)
     bucket = 'open-images-dataset'

@@ -3,36 +3,15 @@ import torch
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split
+import os
 
 from src.dataset import PosterDataset
 
 
-def split_data(root_dir, batch_size=32, train_size=0.8, workers=4):
-    full_dataset = PosterDataset(root_dir)
-
-    dataset_size = len(full_dataset.samples)
-    train_count = int(dataset_size * train_size)
-    val_count = (dataset_size - train_count) // 2
-    test_count = dataset_size - train_count - val_count
-
-    all_samples = full_dataset.samples.copy()
-
-    generator = torch.Generator().manual_seed(621)
-
-    train_indices, val_indices, test_indices = random_split(
-        range(dataset_size), 
-        [train_count, val_count, test_count],
-        generator=generator
-    )
-
-    train_dataset = PosterDataset(root_dir, train=True)
-    train_dataset.samples = [all_samples[i] for i in train_indices]
-    
-    val_dataset = PosterDataset(root_dir, train=False)
-    val_dataset.samples = [all_samples[i] for i in val_indices]
-    
-    test_dataset = PosterDataset(root_dir, train=False)
-    test_dataset.samples = [all_samples[i] for i in test_indices]
+def split_data(root_dir, batch_size=32, workers=4):
+    train_dataset = PosterDataset(os.path.join(root_dir, "train"), train=True)
+    val_dataset = PosterDataset(os.path.join(root_dir, "val"), train=False)
+    test_dataset = PosterDataset(os.path.join(root_dir, "test"), train=False)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=workers)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=workers)
