@@ -1,0 +1,68 @@
+---
+title: 'WatchDog AI'
+date: last-modified
+author: "Jorge Bris Moreno, Brian Kwon, and Thomas Sigall"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+## Introduction
+
+Voter information is a crucial part of democratic processes. For this reason, groups like the one lead by Dr. Thessalia Merivaki and Dr. Mara Suttmann-Lea have been working on studying these communications. By tracking the social media content posted by Local and Sate Election Officials, they have been able to study the topics, type of information, and styles used by these officials. They have also been able to ensure the reliability of the information posted by these officials and make accionable recommendations on the communication strategies of these officials. However, due to the amount of content shared by the officials and the lack of resources available to them, the officials have been relying more and more on AI generated content to help them with their social media posts. While the content may be accurate, some poster present missespellings and other images don't look realistic enough. Thus, Dr. Merivaki and Dr. Suttmann-Lea have reached out to us to help them detect these AI generated images to later study if they are causing mistrust on the public.
+
+To do so, we have created WatchDog AI, which is a pipeline aimed to detect "harmful AI images". We define harmful AI images as any post that makes the viewer doubt about the providence of the image (AI generated) and thus can cause mistrust on the viewer. Again, note that if an image is so well developed that looks real, we are not accounting it as “Harmful AI”, as AI can be an effective tool utilized by Election Officials, providing them with the necessary equipment to develop effective social media campaigns with limited resources.
+
+Based on the data we want to classify, we have divided the data into two categories: posters and realistic images. We count as harmful AI images posters that have misspellings and realistic images that don't look "real" or cause doubts to the viewer. Thus, our proposed pipeline tries to account for these cases.
+
+## Pipeline
+
+The pipeline below is WatchDog AI. Fail means it is flagged as AI and Pass that is not. It is accounting for the scenarios encountered in our Election Officials Dataset. However, the models have been trained with other datasets due to our data not being labeled. However, later in the report you can see our eye-test for our data. Additionally, it is worth noting that this pipeline is intended for having a human in the loop revising the harmful AI flagged images to study their repercussion on the trust of viewers.
+
+![](images/pipeline.png)
+
+## Poster Classification and OCR
+
+## AI Detection
+
+## Object Detection
+
+The object detection algorithm is aimed to detect very small AI artifacts implanted in AI generated images that are not detectable by our detection model. To achieve high accruacies and detect very small objects, we have decided to fine-tune a two stage detector: MMDetection which can be found here: https://github.com/open-mmlab/mmdetection. 
+
+### Data
+
+Since labeled data available for this topic is scarce, we used only the dataset available in Roboflow here: XXXXX. However, to have more training data available, we moved most of the test images to the training and validation sets, leaving the following quantities:
+
+- Train images: 69
+- Validation images: 25
+- Test images: 10
+
+Here is an example of how these images look like:
+
+![](images/object_detect_1.png)
+![](images/object_detect_2.png)
+
+Moreover, for training, some data augmentations have been made leveraging PhotoMetricDistortion from the MMDetection model, only applying light changes on light (saturation, brightness, etc.) and resizing as they did in their original model for better detection.
+
+### Model
+
+The base model to fine-tune is htc_r50_fpn_1x_coco, available in their repository. Some adaptations have been made to fit our needs and computational capacities, such as only doing detection and no segmentation, implemented early stopping, changing different hyperparameters, etc.
+
+The training loss over training is below. It is worth noting that the training was an iteration based look with a validation interval of 150, a patience of 30 based on box_mAP, and a batch size of 16:
+
+add image
+
+Finally, some examples of the predicted boxes and the true boxes are below:
+
+ad image
+
+The model is intended to detect AI artefacts. If an artefact is detected, the image will be flagged as harmful AI image.
+
+## Results
+
+## Future work
+
+## Conclusion
+
+
