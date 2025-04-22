@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision import models
 
 class Simple3BlockCNN(nn.Module):
     def __init__(self):
@@ -82,3 +83,38 @@ class BNDropout3BlockCNN(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
+
+class AIDetectorResNet(nn.Module):
+    def __init__(self, freeze_backbone: bool = False, dropout_rate: float = 0.5) -> None:
+        super(AIDetectorResNet, self).__init__()
+
+        # Pretrained ResNet50
+        self.backbone = models.resnet50(pretrained=True)
+
+        if freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
+        in_features = self.backbone.fc.in_features
+
+        # Replace classifier head
+        self.backbone.fc = nn.Sequential(
+            nn.Dropout(dropout_rate),
+            nn.Linear(in_features, 256),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dropout_rate),
+            nn.Linear(256, 1)
+        )
+
+        self._initialize_head()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.backbone(x)
+    
+    def _initialize_head(self) -> None:
+        """Initialize the new classifier head layers."""
+        for module in self.backbone.fc.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_normal_(module.weight)
+                if module.bias is not None:
+                    nn.init.constant_(module.bias, 0)
