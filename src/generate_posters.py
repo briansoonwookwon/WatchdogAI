@@ -37,21 +37,22 @@ def download_image(url: str, save_path: str) -> bool:
         img.save(save_path)
         return True
     except Exception as e:
-        print(f"Error downloading {url!r}: {e}")
         return False
 
 def main():
-    OUTPUT_DIR = "data/ai-posters"
+    OUTPUT_DIR = "/Users/tsigall/repositories/WatchdogAI/data/raw-data"
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     NUM_ITERATIONS = 10
 
     # Find the highest existing poster number
     existing_files = glob.glob(os.path.join(OUTPUT_DIR, "poster_*.png"))
+    print(f"Found {len(existing_files)} existing files")
     start_idx = 1
     if existing_files:
         # Extract numbers from filenames and find the max
         numbers = [int(os.path.basename(f).split('_')[1].split('.')[0]) for f in existing_files]
         start_idx = max(numbers) + 1
+    print(f"Starting from {start_idx}")
 
     prompts = [
         "A minimalist movie poster for a sci-fi film, dark background with neon accents",

@@ -29,6 +29,52 @@ class Simple3BlockCNN(nn.Module):
         x = self.classifier(x)
         return x
 
+class SimpleResNetCNN(nn.Module):
+    """
+    ResNet-backed CNN for binary classification, following Simple3BlockCNN's philosophy.
+    Uses a pretrained ResNet backbone with a simple 2-layer classifier head.
+    Input: (B, 3, 224, 224) → Output: (B, 1)
+    """
+    def __init__(self, 
+                 backbone: str = 'resnet18',  # lighter than resnet50 by default
+                 freeze_backbone: bool = True, # freeze by default like Simple3BlockCNN
+                 num_classes: int = 1) -> None:
+        super(SimpleResNetCNN, self).__init__()
+        
+        # Load pretrained backbone - supports 'resnet18', 'resnet34', 'resnet50'
+        if backbone == 'resnet18':
+            self.backbone = models.resnet18(pretrained=True)
+        elif backbone == 'resnet34':
+            self.backbone = models.resnet34(pretrained=True)
+        elif backbone == 'resnet50':
+            self.backbone = models.resnet50(pretrained=True)
+        else:
+            raise ValueError(f"Unsupported backbone: {backbone}")
+        
+        if freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+        
+        in_features = self.backbone.fc.in_features
+
+        self.backbone.fc = nn.Sequential(
+            nn.Linear(in_features, 256),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, num_classes)
+        )
+        
+        self._initialize_weights()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.backbone(x)
+    
+    def _initialize_weights(self) -> None:
+        for module in self.backbone.fc.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_normal_(module.weight)
+                if module.bias is not None:
+                    nn.init.constant_(module.bias, 0)
+
 class BNDropout3BlockCNN(nn.Module):
     """
     Simple CNN for binary classification.
