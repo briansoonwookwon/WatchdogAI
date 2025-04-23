@@ -30,11 +30,6 @@ class Simple3BlockCNN(nn.Module):
         return x
 
 class SimpleResNetCNN(nn.Module):
-    """
-    ResNet-backed CNN for binary classification, following Simple3BlockCNN's philosophy.
-    Uses a pretrained ResNet backbone with a simple 2-layer classifier head.
-    Input: (B, 3, 224, 224) → Output: (B, 1)
-    """
     def __init__(self, 
                  backbone: str = 'resnet18',  # lighter than resnet50 by default
                  freeze_backbone: bool = True, # freeze by default like Simple3BlockCNN

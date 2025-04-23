@@ -10,10 +10,6 @@ import glob
 client = OpenAI()
 
 def generate_image(prompt: str, size: str = "256x256") -> str | None:
-    """
-    Generate a single image using DALL·E via the new SDK interface.
-    Returns the URL of the generated image, or None if there was an error.
-    """
     try:
         resp = client.images.generate(
             prompt=prompt,
@@ -23,13 +19,9 @@ def generate_image(prompt: str, size: str = "256x256") -> str | None:
         # The URL is in resp.data[0].url
         return resp.data[0].url
     except Exception as e:
-        print(f"Error generating image for prompt {prompt!r}: {e}")
         return None
 
 def download_image(url: str, save_path: str) -> bool:
-    """
-    Download and save an image from URL to the given path.
-    """
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
@@ -42,7 +34,7 @@ def download_image(url: str, save_path: str) -> bool:
 def main():
     OUTPUT_DIR = "/Users/tsigall/repositories/WatchdogAI/data/raw-data"
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    NUM_ITERATIONS = 10
+    NUM_ITERATIONS = 20
 
     # Find the highest existing poster number
     existing_files = glob.glob(os.path.join(OUTPUT_DIR, "poster_*.png"))

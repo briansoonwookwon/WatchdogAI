@@ -17,10 +17,12 @@ def split_data(root_dir, batch_size=32, workers=4):
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=workers)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=workers)
 
-    headers = ["", "Train", "Val", "Test"]
+    headers = ["", "Train", "Val", "Test", "Total"]
     table = [
-        ["Samples", len(train_dataset), len(val_dataset), len(test_dataset)],
-        ["Batches", len(train_loader), len(val_loader), len(test_loader)]
+        ["Samples", len(train_dataset), len(val_dataset), len(test_dataset), 
+         len(train_dataset) + len(val_dataset) + len(test_dataset)],
+        ["Batches", len(train_loader), len(val_loader), len(test_loader),
+         len(train_loader) + len(val_loader) + len(test_loader)]
     ]
     print(tabulate(table, headers=headers))
     return train_loader, val_loader, test_loader
