@@ -3613,6 +3613,15 @@ wheels = [
 ]
 
 [[package]]
+name = "torchsummary"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/64/aa68ef646bcccab489cac2a85d366559df7d9d24406dbbf3344703cbe33f/torchsummary-1.5.1.tar.gz", hash = "sha256:981bf689e22e0cf7f95c746002f20a24ad26aa6b9d861134a14bc6ce92230590", size = 3749 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7d/18/1474d06f721b86e6a9b9d7392ad68bed711a02f3b61ac43f13c719db50a6/torchsummary-1.5.1-py3-none-any.whl", hash = "sha256:10f41d1743fb918f83293f13183f532ab1bb8f6639a1b89e5f8592ec1919a976", size = 2826 },
+]
+
+[[package]]
 name = "torchvision"
 version = "0.21.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3813,6 +3822,7 @@ dependencies = [
     { name = "tabulate" },
     { name = "tensorflow-datasets" },
     { name = "torch" },
+    { name = "torchsummary" },
     { name = "torchvision" },
     { name = "transformers" },
     { name = "zstandard" },
@@ -3838,6 +3848,7 @@ requires-dist = [
     { name = "tabulate", specifier = ">=0.9.0" },
     { name = "tensorflow-datasets", specifier = ">=4.9.8" },
     { name = "torch", specifier = ">=2.6.0" },
+    { name = "torchsummary", specifier = ">=1.5.1" },
     { name = "torchvision", specifier = ">=0.21.0" },
     { name = "transformers", specifier = ">=4.51.3" },
     { name = "zstandard", specifier = ">=0.23.0" },

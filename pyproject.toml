@@ -23,6 +23,7 @@ dependencies = [
     "tabulate>=0.9.0",
     "tensorflow-datasets>=4.9.8",
     "torch>=2.6.0",
+    "torchsummary>=1.5.1",
     "torchvision>=0.21.0",
     "transformers>=4.51.3",
     "zstandard>=0.23.0",
