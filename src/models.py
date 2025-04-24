@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision import models
+from torchvision.models import resnet18, ResNet18_Weights, resnet50, ResNet50_Weights
 
 class Simple3BlockCNN(nn.Module):
     def __init__(self):
@@ -31,20 +31,11 @@ class Simple3BlockCNN(nn.Module):
 
 class SimpleResNetCNN(nn.Module):
     def __init__(self, 
-                 backbone: str = 'resnet18',  # lighter than resnet50 by default
-                 freeze_backbone: bool = True, # freeze by default like Simple3BlockCNN
+                 freeze_backbone: bool = True,
                  num_classes: int = 1) -> None:
         super(SimpleResNetCNN, self).__init__()
         
-        # Load pretrained backbone - supports 'resnet18', 'resnet34', 'resnet50'
-        if backbone == 'resnet18':
-            self.backbone = models.resnet18(pretrained=True)
-        elif backbone == 'resnet34':
-            self.backbone = models.resnet34(pretrained=True)
-        elif backbone == 'resnet50':
-            self.backbone = models.resnet50(pretrained=True)
-        else:
-            raise ValueError(f"Unsupported backbone: {backbone}")
+        self.backbone = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
         
         if freeze_backbone:
             for param in self.backbone.parameters():
@@ -130,7 +121,7 @@ class AIDetectorResNet(nn.Module):
         super(AIDetectorResNet, self).__init__()
 
         # Pretrained ResNet50
-        self.backbone = models.resnet50(pretrained=True)
+        self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
 
         if freeze_backbone:
             for param in self.backbone.parameters():
