@@ -21,8 +21,10 @@ def main():
         
         print(f"Poster detected (confidence: {poster_conf:.3f})")
         print(f"AI generated: {'Yes' if ai_pred else 'No'} (confidence: {ai_conf:.3f})")
-
-        print(f"\nFinal Result:\n=== Flagged ===")
+        if ai_pred:
+            print(f"\nFinal Result:\n=== Flagged ===")
+        else:
+            print(f"\nFinal Result:\n=== Not Flagged ===")
     else:
         print(f"No poster detected (confidence: {1 - poster_conf:.3f}). Sending to next stage...")
 
