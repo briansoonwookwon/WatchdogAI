@@ -1,5 +1,5 @@
 import argparse
-from src.detectors import PosterDetector, AIDetector
+from src.detectors import PosterDetector, AI_Poster_Detector, AI_Non_Poster_Detector
 
 def main():
     parser = argparse.ArgumentParser(description='AI Content Detection Pipeline')
@@ -16,8 +16,8 @@ def main():
     
     if poster_pred:
         # Second stage: AI detection
-        ai_detector = AIDetector()
-        ai_pred, ai_conf = ai_detector.predict(args.image_path, args.ai_threshold)
+        ai_poster_detector = AI_Poster_Detector()
+        ai_pred, ai_conf = ai_poster_detector.predict(args.image_path, args.ai_threshold)
         
         print(f"Poster detected (confidence: {poster_conf:.3f})")
         print(f"AI generated: {'Yes' if ai_pred else 'No'} (confidence: {ai_conf:.3f})")
@@ -26,7 +26,14 @@ def main():
         else:
             print(f"\nFinal Result:\n=== Not Flagged ===")
     else:
-        print(f"No poster detected (confidence: {1 - poster_conf:.3f}). Sending to next stage...")
-
+        # print(f"No poster detected (confidence: {1 - poster_conf:.3f}). Sending to next stage...")
+        ai_non_poster_detector = AI_Non_Poster_Detector()
+        ai_non_poster_pred, ai_non_poster_conf = ai_non_poster_detector.predict(args.image_path, args.ai_threshold)
+        
+        if ai_non_poster_pred == 1:
+            print("Sending to next stage...")
+        elif ai_non_poster_pred == 0:
+            print(f"\nFinal Result:\n=== Flagged ===")
+        
 if __name__ == "__main__":
     main()
