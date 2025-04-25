@@ -1,10 +1,7 @@
 .venv
 data/
-<<<<<<< HEAD
 mmdetection
-=======
 models/
->>>>>>> 5f14a0d964e6de135d647a419fa7cfaa06f48756
 .DS_Store
 data
 
