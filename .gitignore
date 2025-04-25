@@ -177,3 +177,6 @@ cython_debug/
 
 mmdetection/
 data_artifacts/
+
+epoch_12.pth
+last_checkpoint
