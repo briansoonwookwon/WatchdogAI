@@ -3,6 +3,16 @@ from torchvision import transforms
 from PIL import Image
 from src.models import SimpleResNetCNN, AIDetectorResNet
 from transformers import AutoModelForImageClassification, AutoProcessor 
+import matplotlib.pyplot as plt
+import mmcv
+from mmengine.config import Config
+from mmengine.runner import load_state_dict
+from mmengine.dataset import pseudo_collate
+from mmcv.transforms import Compose
+from mmdet.registry import MODELS
+from mmdet.utils import register_all_modules
+from mmengine.logging import HistoryBuffer
+import numpy as np
 
 class PosterDetector:
     def __init__(self, model_path="models/SimpleResNetCNN/run_6/best_model.pth"):
@@ -70,4 +80,82 @@ class AI_Non_Poster_Detector:
             confidence, predicted_class = torch.max(probabilities, dim=1)
             
         confidence = confidence.item()
+        return (1 if confidence >= threshold else 0, confidence)
+    
+class ArtifactDetector:
+    def __init__(self, config_file="models/htc_r50_artifact_final/htc_r50_fpn_1x_artifact.py", 
+                 checkpoint_file="models/htc_r50_artifact_final/best_coco_bbox_mAP_epoch_11.pth", 
+                 detection_threshold=0.15, device='cpu'):
+        
+        # Register MMDetection modules
+        register_all_modules()
+
+        # Load config
+        self.cfg = Config.fromfile(config_file)
+        self.cfg.model.pop('pretrained', None)
+
+        # Build model
+        self.model = MODELS.build(self.cfg.model)
+        self.model.eval()
+
+        # Safely allow PyTorch to load necessary pickled objects
+        torch.serialization.add_safe_globals([
+            HistoryBuffer,
+            np.core.multiarray._reconstruct,
+            np.ndarray,
+            np.dtype,
+            np.float64().dtype.__class__,
+            np.int64().dtype.__class__,
+        ])
+
+        # Load checkpoint
+        ckpt = torch.load(
+            checkpoint_file,
+            map_location=device,
+            weights_only=False
+        )
+        state_dict = ckpt['state_dict'] if 'state_dict' in ckpt else ckpt
+        load_state_dict(self.model, state_dict)
+
+        # Save settings
+        self.device = device
+        self.detection_threshold = detection_threshold
+
+        # 🔧 Move model to device
+        self.model.to(device)
+
+        # Build the test pipeline
+        self.pipeline = Compose(self.cfg.test_dataloader.dataset.pipeline)
+
+        # Get class names if available
+        self.class_names = self.model.dataset_meta['classes'] if hasattr(self.model, 'dataset_meta') else None
+
+    def predict(self, image_path):
+        # Load image
+        image = mmcv.imread(image_path)
+
+        # Prepare input
+        data = dict(img=image, img_path=image_path)
+        data = self.pipeline(data)
+        data = pseudo_collate([data])
+
+        # Inference
+        with torch.no_grad():
+            result = self.model.test_step(data)
+
+        # Extract predictions
+        pred = result[0]
+        bboxes = pred.pred_instances.bboxes.cpu().numpy()
+        labels = pred.pred_instances.labels.cpu().numpy()
+        scores = pred.pred_instances.scores.cpu().numpy()
+
+        # Check detections
+        detections_found = 0
+        for bbox, label, score in zip(bboxes, labels, scores):
+            if score >= self.detection_threshold:
+                detections_found += 1
+
+        # Determine class
+        flag = 1 if detections_found > 0 else 0
+        return flag
         return (1 if confidence >= threshold else 0, confidence)

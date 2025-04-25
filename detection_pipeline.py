@@ -1,5 +1,5 @@
 import argparse
-from src.detectors import PosterDetector, AI_Poster_Detector, AI_Non_Poster_Detector
+from src.detectors import PosterDetector, AI_Poster_Detector, AI_Non_Poster_Detector, ArtifactDetector
 
 def main():
     parser = argparse.ArgumentParser(description='AI Content Detection Pipeline')
@@ -31,6 +31,19 @@ def main():
         ai_non_poster_pred, ai_non_poster_conf = ai_non_poster_detector.predict(args.image_path, args.ai_threshold)
         
         if ai_non_poster_pred == 1:
+
+            artifact_detector = ArtifactDetector()
+            artifact_pred = artifact_detector.predict(args.image_path)
+
+            if artifact_pred:
+                print(f"\nFinal Result:\n=== Flagged ===")
+            else:
+                print(f"\nFinal Result:\n=== Not Flagged ===")
+
+        elif ai_non_poster_pred == 0:
+            print(f"\nFinal Result:\n=== Flagged ===")
+
+    
             print("Sending to next stage...")
         elif ai_non_poster_pred == 0:
             print(f"\nFinal Result:\n=== Flagged ===")
