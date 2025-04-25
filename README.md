@@ -1,2 +1,2 @@
 # WatchdogAI
-![Process Diagram](./process_diagram.png)
+![Process Diagram](imges/pipeline.png)
