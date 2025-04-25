@@ -23,7 +23,6 @@ The pipeline below is WatchDog AI. Fail means it is flagged as AI and Pass that 
 
 ![](images/pipeline.png)
 
-## Poster Classification and OCR
 ## Poster Classification
 
 The first stage of our pipeline involves working with images that are posters, a common method of communcation for election officials. This was split into two components: one model to classify if the image is a poster or not, and another model to classify if the image is a harmful AI poster or not.
@@ -46,8 +45,17 @@ Due to the similarity of the task to the poster/non-poster classification, we us
 
 In terms of performance for this model, an accuracy of 89.4% was achieved on the validation set and 90.6% on the test set, indicating that the model performed well at classifying images as harmful AI posters or not. This time only the one model was trained as the performance was satisfactory. Again, leveraging the pre-trained features from even the frozen ResNet-50 backbone proved to be effective for this task.
 
-
 ## AI Detection
+
+For AI Detection on non-poster like images, we trained two models. For the first model, we used ResNet18 to fine tune for our binary classification task. 
+
+For this part of our pipeline, we used two datatsets. First is CIFAKE. This dataset contains 120,000 images, REAL and FAKE, from CIFAR-100. FAKE images are created through a Diffusion model using CIFAR=100 images. The second dataset is came from 2023 Fake or Real: AI-generated Image Discrimination Competition. This dataset contains 20,000 images. Both dataset has evenly distributed labels. 
+
+For our first model, we used both CIFAKE and competition data, splited into train (80%), validation(20%), and test set(20%). The ResNet18 is finetuned with frozen layers up until the final classification head and replaced with one linear layer for classification with Adam optimizer and 0.001 learning rate. With this model, we are able to have [this much] of accuracy and losses.
+
+This was not a bad result, yet we decided to dive more deeper to train Vision Transformer. This is because the Gen AI images have tiny artifacts especially on the people's faces and we believe ViT is better to capture those tiny piecies of. Our ViT model is also finetuned, yet this time we only used CIFAKE data so that we can test how good our model is on extrapolating on unseen dataset. With 20,000 steps (5 epochs with 4000 steps), we were able to get 90% accuracy on test set and 80% accuracy on unseen test set. This is a huge improvement compared to our initial model and proves our model is more robust as well. 
+
+Another thing to note is that we used a stricter threshold on flagging Fake images because it is crucial to flag harmful images not just classifying Gen AI images. 
 
 ## Object Detection
 
@@ -93,9 +101,6 @@ The model is intended to detect AI artefacts. If an artefact is detected, the im
 ## Results
 
 ## Future work
-
-## Conclusion
-
 
 While the developed pipeline shows promise, there are several avenues for future work, focusing on the scope and robustness of each component.
 
