@@ -1,0 +1,102 @@
+---
+title: 'WatchDog AI'
+date: last-modified
+author: "Jorge Bris Moreno, Brian Kwon, and Thomas Sigall"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+## Introduction
+
+Voter information is a crucial part of democratic processes. For this reason, groups like the one lead by Dr. Thessalia Merivaki and Dr. Mara Suttmann-Lea have been working on studying these communications. By tracking the social media content posted by Local and Sate Election Officials, they have been able to study the topics, type of information, and styles used by these officials. They have also been able to ensure the reliability of the information posted by these officials and make actionable recommendations on the communication strategies of these officials. However, due to the amount of content shared by the officials and the lack of resources available to them, the officials have been relying more and more on AI generated content to help them with their social media posts. While the content may be accurate, some poster present misspellings and other images don't look realistic enough. Thus, Dr. Merivaki and Dr. Suttmann-Lea have reached out to us to help them detect these AI generated images to later study if they are causing mistrust on the public.
+
+To do so, we have created WatchDog AI, which is a pipeline aimed to detect "harmful AI images". We define harmful AI images as any post that makes the viewer doubt about the providence of the image (AI generated) and thus can cause mistrust on the viewer. Again, note that if an image is so well developed that looks real, we are not accounting it as “Harmful AI”, as AI can be an effective tool utilized by Election Officials, providing them with the necessary equipment to develop effective social media campaigns with limited resources.
+
+Based on the data we want to classify, we have divided the data into two categories: posters and realistic images. We count as harmful AI images posters that have misspellings and realistic images that don't look "real" or cause doubts to the viewer. Thus, our proposed pipeline tries to account for these cases.
+
+## Pipeline
+
+The pipeline below is WatchDog AI. Fail means it is flagged as AI and Pass that is not. It is accounting for the scenarios encountered in our Election Officials Dataset. However, the models have been trained with other datasets due to our data not being labeled. However, later in the report you can see our eye-test for our data. Additionally, it is worth noting that this pipeline is intended for having a human in the loop revising the harmful AI flagged images to study their repercussion on the trust of viewers.
+
+![](images/pipeline.png)
+
+## Poster Classification
+
+The first stage of our pipeline involves working with images that are posters, a common method of communcation for election officials. This was split into two components: one model to classify if the image is a poster or not, and another model to classify if the image is a harmful AI poster or not.
+
+### Poster/Non-Poster Classification
+
+Data for the initial poster classification model was collected from Google's Open Images Dataset (https://storage.googleapis.com/openimages/web/index.html). This dataset containts around 9,000,000 images with 600+ labels. For this initial poster classification model, we took 5,000 images from the dataset that were labeled as posters and 5,000 images across all other labels.
+
+We took a transfer learning approach to this problem, using a frozen ResNet-18 backbone and a custom classifer head. This custom head consisted of a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 18 epochs.
+
+In terms of performance for this model, an accuracy of 94.4% was achieved on the validation set and 92.5% on the test set, indicating that the model performed well at classifying images as posters or not. A few different models were tried, including a simple CNN built from scratch and as well as a CNN with batch normalization and dropout. The simple 3-block CNN achieved a respectable accuracy of 87.2% on the validation set, but the transfer learning model trained just as quickly and achieved a higher accuracy. Leveraging the pre-trained features from ResNet-18 proved to be effective for this task, even with freezing the backbone to improve training times.
+
+### Harmful AI Poster Classification
+
+The goal of the second stage of the pipeline is to flag an image for human review if it is a potentially harmful AI-generated poster. "Harmful" in this context is defined as an image that is a poster that contains misspellings or other artifacts that are not typically found in posters, leading to distrust on the part of the viewer and a counter-productive poster from the perspective of the election official.
+
+The dataset for this model was collected differently. Obtaining AI generated posters proved to be difficult, so we instead generated them ourselves. We utilized OpenAI's DALL-E image generation client to create 472 posters. A set of 10 distinct prompts covering a variety of themes were used to guide the generation. These images formed the basis for our "Harmful AI" class examples as they all clearly contain artifacts that are not typically found in posters. We then took an equal number of non-AI generated posters from the previously used dataset to form our "Non-Harmful AI" class examples.
+
+Due to the similarity of the task to the poster/non-poster classification, we used a similar model structure, thought this time a ResNet-50 backbone was used due to the increased complexity of the task. A custom classifier head was used again, this time with a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Dropout was added this time as well, with a dropout rate of 0.7. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 15 epochs.
+
+In terms of performance for this model, an accuracy of 89.4% was achieved on the validation set and 90.6% on the test set, indicating that the model performed well at classifying images as harmful AI posters or not. This time only the one model was trained as the performance was satisfactory. Again, leveraging the pre-trained features from even the frozen ResNet-50 backbone proved to be effective for this task.
+
+
+## AI Detection
+
+## Object Detection
+
+The object detection algorithm is aimed to detect very small AI artifacts implanted in AI generated images that are not detectable by our detection model. To achieve high accruacies and detect very small objects, we have decided to fine-tune a two stage detector: MMDetection which can be found here: https://github.com/open-mmlab/mmdetection.
+
+### Data
+
+Since labeled data available for this topic is scarce, we used only the dataset available in Roboflow here: XXXXX. However, to have more training data available, we moved most of the test images to the training and validation sets, leaving the following quantities:
+
+-   Train images: 69
+-   Validation images: 25
+-   Test images: 10
+
+Here is an example of how these images look like:
+
+![](images/object_detect_1.png) ![](images/object_detect_2.png)
+
+Moreover, for training, some data augmentations have been made leveraging PhotoMetricDistortion from the MMDetection model, only applying light changes on light (saturation, brightness, etc.) and resizing as they did in their original model for better detection.
+
+### Model
+
+The base model to fine-tune is htc_r50_fpn_1x_coco, available in their repository. Some adaptations have been made to fit our needs and computational capacities, such as only doing detection and no segmentation, implemented early stopping, changing different hyperparameters, etc.
+
+The training loss over training is below. It is worth noting that the training was an iteration based look with a validation interval of 150, a patience of 30 based on box_mAP, and a batch size of 16:
+
+add image
+
+Finally, some examples of the predicted boxes and the true boxes are below:
+
+ad image
+
+The model is intended to detect AI artefacts. If an artefact is detected, the image will be flagged as harmful AI image.
+
+## Results
+
+## Future work
+
+While the developed pipeline shows promise, there are several avenues for future work, focusing on the scope and robustness of each component.
+
+### Poster Classification
+
+In terms of the poster classification model, the main focus of future work would be to enhance detection of subtle AI artifacts, specifically in text. Improving the training dataset for harmful AI posters by using more sophisticated prompt engineering and/or using a better image generation model would be a good start. More importantly, however, would be to make use of Optical Character Recognition (OCR) alongside the current visual classification model. A significant advancement would be developing a hybrid detection system that leverages both the visual and text-based features of AI-generated posters. Extracting text regions, analyzing content and style for AI-induced anomalies (inconsistent kerning, unusual font mixing, etc.) combined with visual artificat detection would not only improve accuracy but also enhance the explainability of why a poster is flagged as potentially harmful.
+
+### AI Detection
+
+Regarding the general AI detection model, initial results suggest the fine-tuned ResNet, while effective on the training set, may lack robustness when extrapolating to entirely unseen image types or generation methods. As such, future work should therefore explore alternative and potentially more complex model architectures beyond standard CNNs. Investigating and expanding on the capabilities of Vision Transformers for this task would be helpful, given their different approach to capturing global image context, which might be advantageous for detecting diverse AI generation patterns.
+
+### Object Detection
+
+The object detection component, aimed at identifying fine-grained artifacts, would significantly benefit from a larger and more diverse dataset. Actively seeking or generating data featuring a wider variety of subtle AI artifacts is crucial for improving its generalization capabilities. Additionally, exploring image segmentation models alongside detection could provide more precise localization of AI artifacts, potentially leading to better detection performance. Finally, systematically benchmarking the current fine-tuned model against other state-of-the-art two-stage and one-stage detector would ensure the most effective model is used.
+
+## Conclusion
+
+Throughout this project we focused on keeping a consistent definition for what was considered a "harmful" image. It was easy to fall back into the assumption that this task was to flag images as either AI generated or not, but the task was more nuanced than that. A poster can be AI generated, but if it is done well, it can be useful for the election official. Reframing the problem as classifying images as trustworthy or not trustworthy helped keep the overall goal in mind. Generative AI is a powerful tool that can reduce the already limited resources available to election officials, but when used poorly it can work against their goals and cause mistrust on the part of the public. Due to the subjective nature of "trust", this pipeline is intended to be used as a tool for election officials to detect harmful AI images, but the final decision on whether an image is harmful or not should be made by a human. An image that is flagged ideally would be shown to a variety of potential voters to see how they would respond, whether it would encourage them to vote or cause distrust in regards to the voting process. Our pipeline showed promising results, but, as always, there is room for improvement. We hope that this pipeline can be a useful tool for election officials to detect harmful AI images and help them communicate with the public.
