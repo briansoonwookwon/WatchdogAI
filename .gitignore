@@ -1,4 +1,7 @@
 .venv
+data/
+models/
+.DS_Store
 data
 
 # Byte-compiled / optimized / DLL files
