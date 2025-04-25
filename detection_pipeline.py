@@ -44,6 +44,9 @@ def main():
             print(f"\nFinal Result:\n=== Flagged ===")
 
     
+            print("Sending to next stage...")
+        elif ai_non_poster_pred == 0:
+            print(f"\nFinal Result:\n=== Flagged ===")
         
 if __name__ == "__main__":
     main()

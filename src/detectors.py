@@ -13,6 +13,7 @@ from mmdet.registry import MODELS
 from mmdet.utils import register_all_modules
 from mmengine.logging import HistoryBuffer
 import numpy as np
+
 class PosterDetector:
     def __init__(self, model_path="models/SimpleResNetCNN/run_6/best_model.pth"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
@@ -157,3 +158,4 @@ class ArtifactDetector:
         # Determine class
         flag = 1 if detections_found > 0 else 0
         return flag
+        return (1 if confidence >= threshold else 0, confidence)
