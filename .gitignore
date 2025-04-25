@@ -1,4 +1,7 @@
 .venv
+data/
+mmdetection
+.DS_Store
 data
 
 # Byte-compiled / optimized / DLL files
@@ -68,6 +71,7 @@ db.sqlite3-journal
 instance/
 .webassets-cache
 
+models/non_poster_model/
 # Scrapy stuff:
 .scrapy
 
