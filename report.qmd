@@ -1,0 +1,18 @@
+For AI Detection on non-poster like images, we trained two models. For the first model, we used ResNet18 to fine tune for our binary classification task. 
+
+For this part of our pipeline, we used two datatsets. First is CIFAKE. This dataset contains 120,000 images, REAL and FAKE, from CIFAR-100. FAKE images are created through a Diffusion model using CIFAR=100 images. The second dataset is came from 2023 Fake or Real: AI-generated Image Discrimination Competition. This dataset contains 20,000 images. Both dataset has evenly distributed labels. 
+
+For our first model, we used both CIFAKE and competition data, splited into train (80%), validation(20%), and test set(20%). The ResNet18 is finetuned with frozen layers up until the final classification head and replaced with one linear layer for classification with Adam optimizer and 0.001 learning rate. With this model, we are able to have [this much] of accuracy and losses.
+
+This was not a bad result, yet we decided to dive more deeper to train Vision Transformer. This is because the Gen AI images have tiny artifacts especially on the people's faces and we believe ViT is better to capture those tiny piecies of. Our ViT model is also finetuned, yet this time we only used CIFAKE data so that we can test how good our model is on extrapolating on unseen dataset. With 20,000 steps (5 epochs with 4000 steps), we were able to get 90% accuracy on test set and 80% accuracy on unseen test set. This is a huge improvement compared to our initial model and proves our model is more robust as well. 
+
+Another thing to note is that we used a stricter threshold on flagging Fake images because it is crucial to flag harmful images not just classifying Gen AI images. 
+
+
+https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images
+https://huggingface.co/datasets/mncai/Fake_or_Real_Competition_Dataset
+
+
+---
+
+We were able to create a pipeline where it can detect harmful Gen AI images. It is very crucial to have a capability to detect harmful Gen AI images especially when we are getting more powerful computer vision models. Through our pipeline, we are able to see it is very promising to do this task with just 4 different models. The next step will be making a pipeline more reliable as many people will depend on this kind of models to make a decision on whether the Gen AI images are trustworthy or not. 
