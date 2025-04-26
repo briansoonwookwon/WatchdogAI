@@ -44,19 +44,15 @@ Due to the similarity of the task to the poster/non-poster classification, we us
 
 In terms of performance for this model, an accuracy of 89.4% was achieved on the validation set and 90.6% on the test set, indicating that the model performed well at classifying images as harmful AI posters or not. This time only the one model was trained as the performance was satisfactory. Again, leveraging the pre-trained features from even the frozen ResNet-50 backbone proved to be effective for this task.
 
+## Harmgul AI Non-Poster Detection
 
-## AI Detection
+For AI detection on non-poster-like images, we trained two models for our binary classification task.: fine-tuned ResNet18 and Vision Transformer. We used two datasets for this part of the pipeline. The first is CIFAKE, which contains 120,000 REAL and FAKE images derived from CIFAR-100. FAKE images were generated using a diffusion model based on CIFAR-100 images. The second dataset came from the 2023 Fake or Real: AI-generated Image Discrimination Competition, consisting of 20,000 images. Both datasets have evenly distributed labels.
 
-For AI Detection on non-poster like images, we trained two models. For the first model, we used ResNet18 to fine tune for our binary classification task. 
+For our ResNet18 model, we combined the CIFAKE and competition datasets and split them into training (80%), validation (20%), and testing (20%) sets. We fine-tuned the model by freezing all layers except the final classification head, which we replaced with a single linear layer. The model was trained using the Adam optimizer with a learning rate of 0.001. This model achieved an accuracy of 85% on validation set and 75% on test set.
 
-For this part of our pipeline, we used two datatsets. First is CIFAKE. This dataset contains 120,000 images, REAL and FAKE, from CIFAR-100. FAKE images are created through a Diffusion model using CIFAR=100 images. The second dataset is came from 2023 Fake or Real: AI-generated Image Discrimination Competition. This dataset contains 20,000 images. Both dataset has evenly distributed labels. 
+Having the promising result, we decided to push further and train a Vision Transformer (ViT) model. We chose ViT because AI-generated images often contain subtle artifacts—particularly in human faces—that ViTs are better equipped to capture. For the ViT model, we fine-tuned it using only the CIFAKE dataset to better assess its ability to generalize to unseen data. After training for 20,000 steps (approximately 5 epochs with 4,000 steps each), the model achieved 90% accuracy on the CIFAKE test set and 80% accuracy on an unseen test set of competition data. This was a significant improvement over our initial model and demonstrated the increased robustness of our approach.
 
-For our first model, we used both CIFAKE and competition data, splited into train (80%), validation(20%), and test set(20%). The ResNet18 is finetuned with frozen layers up until the final classification head and replaced with one linear layer for classification with Adam optimizer and 0.001 learning rate. With this model, we are able to have [this much] of accuracy and losses.
-
-This was not a bad result, yet we decided to dive more deeper to train Vision Transformer. This is because the Gen AI images have tiny artifacts especially on the people's faces and we believe ViT is better to capture those tiny piecies of. Our ViT model is also finetuned, yet this time we only used CIFAKE data so that we can test how good our model is on extrapolating on unseen dataset. With 20,000 steps (5 epochs with 4000 steps), we were able to get 90% accuracy on test set and 80% accuracy on unseen test set. This is a huge improvement compared to our initial model and proves our model is more robust as well. 
-
-Another thing to note is that we used a stricter threshold on flagging Fake images because it is crucial to flag harmful images not just classifying Gen AI images. 
-
+![](images/ViT_loss.png)
 
 ## Object Detection
 
@@ -101,9 +97,6 @@ The model is intended to detect AI artefacts. If an artefact is detected, the im
 ## Results
 
 ## Future work
-
-## Conclusion
-
 
 While the developed pipeline shows promise, there are several avenues for future work, focusing on the scope and robustness of each component.
 

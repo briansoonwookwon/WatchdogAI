@@ -65,7 +65,7 @@ class AI_Poster_Detector:
 class AI_Non_Poster_Detector:
     def __init__(self, model_path="models/non_poster_model"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-        self.model = AutoModelForImageClassification.from_pretrained(model_path).to(self.device)
+        self.model = AutoModelForImageClassification.from_pretrained(model_path, use_fast=True).to(self.device)
         self.processor = AutoProcessor.from_pretrained(model_path)
         self.model.eval()
         
@@ -73,15 +73,30 @@ class AI_Non_Poster_Detector:
         image = Image.open(image_path).convert('RGB')
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)
         
+        # with torch.no_grad():
+        #     outputs = self.model(**inputs)
+        #     logits = outputs.logits
+        #     probabilities = torch.softmax(logits, dim=1)
+        #     confidence, predicted_class = torch.max(probabilities, dim=1)
+            
+        # confidence = confidence.item()
+        # return (1 if confidence >= threshold else 0, confidence)
+        
         with torch.no_grad():
             outputs = self.model(**inputs)
             logits = outputs.logits
             probabilities = torch.softmax(logits, dim=1)
-            confidence, predicted_class = torch.max(probabilities, dim=1)
             
-        confidence = confidence.item()
-        return (1 if confidence >= threshold else 0, confidence)
-    
+            # Get the probability of the FAKE class (class 0)
+            fake_prob = probabilities[:, 0].item()
+            real_prob = probabilities[:, 1].item()
+            
+            # If the fake probability is high, predict FAKE
+            if fake_prob >= threshold:
+                return (0, fake_prob)
+            else:
+                return (1, real_prob)
+            
 class ArtifactDetector:
     def __init__(self, config_file="models/htc_r50_artifact_final/htc_r50_fpn_1x_artifact.py", 
                  checkpoint_file="models/htc_r50_artifact_final/best_coco_bbox_mAP_epoch_11.pth", 
