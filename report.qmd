@@ -70,13 +70,6 @@ Here is an example of how these images look like:
 
 ![](images/object_detect_1.png)
 ![](images/object_detect_2.png)
--   Train images: 69
--   Validation images: 25
--   Test images: 10
-
-Here is an example of how these images look like:
-
-![](images/object_detect_1.png) ![](images/object_detect_2.png)
 
 Moreover, for training, some data augmentations have been made leveraging PhotoMetricDistortion from the MMDetection model, only applying light changes on light (saturation, brightness, etc.) and resizing as they did in their original model for better detection.
 
