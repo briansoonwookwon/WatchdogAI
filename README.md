@@ -5,7 +5,7 @@ Jorge Bris Moreno, Thomas Sigall, and Brian Kwon
 ## Project Overview
 This is our project overview.
 
-![Process Diagram](imges/pipeline.png)
+![Process Diagram](images/pipeline.png)
 
 ## Preparation
 ### Models
