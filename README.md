@@ -9,7 +9,7 @@ This is our project overview.
 
 ## Preparation
 ### Models
-All models are included in the `models` folder except our Vision Tranformer model, which is in the `models/non_poster_model` folder. You can find this model in [Google Drive].(https://drive.google.com/drive/folders/1J1krRM3kfUSVaP0U3bMoJQiq7d_AOskN?usp=sharing)
+All models are included in the `models` folder except our Vision Tranformer model, which is in the `models/non_poster_model` folder. You can find this model in [Google Drive.](https://drive.google.com/drive/folders/1J1krRM3kfUSVaP0U3bMoJQiq7d_AOskN?usp=sharing)
 
 ## Usage
 You can use our pipeline by running the following command:
