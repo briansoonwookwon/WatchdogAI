@@ -44,7 +44,7 @@ Due to the similarity of the task to the poster/non-poster classification, we us
 
 In terms of performance for this model, an accuracy of 89.4% was achieved on the validation set and 90.6% on the test set, indicating that the model performed well at classifying images as harmful AI posters or not. This time only the one model was trained as the performance was satisfactory. Again, leveraging the pre-trained features from even the frozen ResNet-50 backbone proved to be effective for this task.
 
-## Harmgul AI Non-Poster Detection
+## Harmful AI Non-Poster Detection
 
 For AI detection on non-poster-like images, we trained two models for our binary classification task.: fine-tuned ResNet18 and Vision Transformer. We used two datasets for this part of the pipeline. The first is CIFAKE, which contains 120,000 REAL and FAKE images derived from CIFAR-100. FAKE images were generated using a diffusion model based on CIFAR-100 images. The second dataset came from the 2023 Fake or Real: AI-generated Image Discrimination Competition, consisting of 20,000 images. Both datasets have evenly distributed labels.
 
@@ -56,11 +56,17 @@ Having the promising result, we decided to push further and train a Vision Trans
 
 ## Object Detection
 
-The object detection algorithm is aimed to detect very small AI artifacts implanted in AI generated images that are not detectable by our detection model. To achieve high accruacies and detect very small objects, we have decided to fine-tune a two stage detector: MMDetection which can be found here: https://github.com/open-mmlab/mmdetection. 
+The object detection algorithm is aimed to detect very small AI artifacts implanted in AI generated images that are not detectable by our detection model. To achieve high accruacies and detect very small objects, we have decided to fine-tune a two stage detector: MMDetection which can be found here: [GitHub-link](https://github.com/open-mmlab/mmdetection). Out the models offered by MMDetection, we have decided to use the htc_r50_fpn_1x_coco model, as it offers the best balance between accuracy and speed for tiny objects like AI artifacts.
+
+This model is a two stage detector, which first proposes bounding boxes and then classifies them. While it is aimed to do both, object detection and segmentation, we have turned off the segmentation part of the model as it is not needed for our task. This model gets an image and resizes it to 800x800, then passes it through a backbone to extract features and a feature pyramid network to get a feature map of the image. Then, this feature map is passed through a region proposal network to propose bounding boxes and a classifier to classify them.
+
+The goal of this model in the pipeline is to be able to detect all those images that the other models missed. It is for images that look more realistic and thus, the AI Non-poster detection model is not able to capture but are still harmful, as they add some artefacts that make the image look fake or "strange".
+
+**Note:** While this model can run easily on a CPU for inference, it was very hard to train on a CPU. Thus, we outsourced the training to a GPU. As a result, the model seems to e training perfectly, but due to our compute limitations, we have not trained it for more epochs and thus, this part is a proof of concept.
 
 ### Data
 
-Since labeled data available for this topic is scarce, we used only the dataset available in Roboflow here: XXXXX. However, to have more training data available, we moved most of the test images to the training and validation sets, leaving the following quantities:
+Since labeled data available for this topic is scarce, we used only the dataset available in Roboflow [here](https://universe.roboflow.com/subjective/deepfake-detection-kukoh). However, to have more training data available, we moved most of the test images to the training and validation sets, leaving the following quantities:
 
 - Train images: 69
 - Validation images: 25
@@ -68,26 +74,21 @@ Since labeled data available for this topic is scarce, we used only the dataset 
 
 Here is an example of how these images look like:
 
-![](images/object_detect_1.png)
-![](images/object_detect_2.png)
+<p align="center" style="display: flex; justify-content: center; gap: 20px;">
+  <img src="images/object_detect_1.png" width="300px">
+  <img src="images/object_detect_2.png" width="300px">
+</p>
 
 Moreover, for training, some data augmentations have been made leveraging PhotoMetricDistortion from the MMDetection model, only applying light changes on light (saturation, brightness, etc.) and resizing as they did in their original model for better detection.
 
-### Model
-
-The base model to fine-tune is htc_r50_fpn_1x_coco, available in their repository. Some adaptations have been made to fit our needs and computational capacities, such as only doing detection and no segmentation, implemented early stopping, changing different hyperparameters, etc.
-
-The training loss over training is below. It is worth noting that the training was an iteration based look with a validation interval of 150, a patience of 30 based on box_mAP, and a batch size of 16:
-
-add image
-
-Finally, some examples of the predicted boxes and the true boxes are below:
-
-ad image
-
-The model is intended to detect AI artefacts. If an artefact is detected, the image will be flagged as harmful AI image.
-
 ## Results
+
+As mentioned before, we can see in the plots below how the models was rapidly learning. However, due to our compute limitations, we have not trained it for more epochs. While in our pipeline it seems to perform well, the confidence of the artefacts needs to be set at a very low number currently (0.15), which may add false positives. Thus, in the future, we would like to be able to train it for more epochs and thus, have a more robust model.
+
+<p align="center">
+  <img src="images/loss_curve.png" width="85%" style="display: inline-block;">
+  <img src="images/map_curve.png" width="85%" style="display: inline-block;">
+</p>
 
 ## Future work
 
@@ -103,7 +104,7 @@ Regarding the general AI detection model, initial results suggest the fine-tuned
 
 ### Object Detection
 
-The object detection component, aimed at identifying fine-grained artifacts, would significantly benefit from a larger and more diverse dataset. Actively seeking or generating data featuring a wider variety of subtle AI artifacts is crucial for improving its generalization capabilities. Additionally, exploring image segmentation models alongside detection could provide more precise localization of AI artifacts, potentially leading to better detection performance. Finally, systematically benchmarking the current fine-tuned model against other state-of-the-art two-stage and one-stage detector would ensure the most effective model is used.
+The object detection component, aimed at identifying fine-grained artifacts, would significantly benefit from training for more epochs, as we can see that the model did not finish learning from the plots presented, and a larger and more diverse dataset. Actively seeking or generating data featuring a wider variety of subtle AI artifacts is crucial for improving its generalization capabilities. Additionally, exploring image segmentation alongside detection could provide more precise localization of AI artifacts, potentially leading to better detection performance. Finally, systematically benchmarking the current fine-tuned model against other state-of-the-art two-stage and one-stage detector would ensure the most effective model is used.
 
 ## Conclusion
 
