@@ -44,6 +44,9 @@ python detection_pipeline.py <path_to_image> --poster_threshold <value> --ai_thr
 ├── 📁 src
 │   ├── ...
 │   └── detectors.py
+├── 📁 environment
+│   ├── environment.yml
+│   └── Environment.qmd
 ├── .gitattributes
 ├── .gitignore
 ├── detection_pipeline.py        ---> Our pipeline                
