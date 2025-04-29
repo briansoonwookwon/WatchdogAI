@@ -1,0 +1,14 @@
+# Environment Set Up using Conda
+
+If using the provided yml file does not work, try the following steps:
+
+1) Create an environment with python 3.10
+2) Install the following: pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0
+3) Clone the MMDET repository: git clone https://github.com/open-mmlab/mmdetection.git
+4) cd to the repository: cd mmdetection
+5) Install the dependencies: pip install -e .
+6) pip install pillow==11.2.1 pandas numpy==2.2.5 matplotlib transformers==4.51.3
+7) pip install "mmcv<2.2.0,>=2.0.0rc4" --force-reinstall
+
+Now, your environment should be ready to run the pipeline.
+

@@ -3,13 +3,16 @@
 Jorge Bris Moreno, Thomas Sigall, and Brian Kwon
 
 ## Project Overview
-This is our project overview.
 
-![Process Diagram](images/pipeline.png)
+This project focuses on detecting AI-generated images in election officials’ social media posts related to voter information. In an attempt to study if there is misstrust in the voter information space linked to AI-generated images, we are attempting to detect AI-generated images in election officials’ social media posts as a first step. To do so, we have developed the WatchDog AI Pipeline:
+![WatchDog AI](images/pipeline.png)
 
 ## Preparation
 ### Models
 All models are included in the `models` folder except our Vision Tranformer model, which is in the `models/non_poster_model` folder. You can find this model in [Google Drive.](https://drive.google.com/drive/folders/1J1krRM3kfUSVaP0U3bMoJQiq7d_AOskN?usp=sharing)
+
+### Environment
+We recommend creating the environment with the file `environment/environment.yml`. However, we have detected some issues in certain devices, so there is also an informative file to follow the environment set-up using conda.
 
 ## Usage
 You can use our pipeline by running the following command:
