@@ -30,7 +30,9 @@ The first stage of our pipeline involves working with images that are posters, a
 
 Data for the initial poster classification model was collected from Google's Open Images Dataset (https://storage.googleapis.com/openimages/web/index.html). This dataset containts around 9,000,000 images with 600+ labels. For this initial poster classification model, we took 5,000 images from the dataset that were labeled as posters and 5,000 images across all other labels.
 
-We took a transfer learning approach to this problem, using a frozen ResNet-18 backbone and a custom classifer head. This custom head consisted of a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 18 epochs.
+We took a transfer learning approach to this problem, using a frozen ResNet-18 backbone and a custom classifer head. This custom head consisted of a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 18 epochs. Training progression can be seen below.
+
+![](images/poster_training.png)
 
 In terms of performance for this model, an accuracy of 94.4% was achieved on the validation set and 92.5% on the test set, indicating that the model performed well at classifying images as posters or not. A few different models were tried, including a simple CNN built from scratch and as well as a CNN with batch normalization and dropout. The simple 3-block CNN achieved a respectable accuracy of 87.2% on the validation set, but the transfer learning model trained just as quickly and achieved a higher accuracy. Leveraging the pre-trained features from ResNet-18 proved to be effective for this task, even with freezing the backbone to improve training times.
 
@@ -40,7 +42,9 @@ The goal of the second stage of the pipeline is to flag an image for human revie
 
 The dataset for this model was collected differently. Obtaining AI generated posters proved to be difficult, so we instead generated them ourselves. We utilized OpenAI's DALL-E image generation client to create 472 posters. A set of 10 distinct prompts covering a variety of themes were used to guide the generation. These images formed the basis for our "Harmful AI" class examples as they all clearly contain artifacts that are not typically found in posters. We then took an equal number of non-AI generated posters from the previously used dataset to form our "Non-Harmful AI" class examples.
 
-Due to the similarity of the task to the poster/non-poster classification, we used a similar model structure, thought this time a ResNet-50 backbone was used due to the increased complexity of the task. A custom classifier head was used again, this time with a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Dropout was added this time as well, with a dropout rate of 0.7. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 15 epochs.
+Due to the similarity of the task to the poster/non-poster classification, we used a similar model structure, thought this time a ResNet-50 backbone was used due to the increased complexity of the task. A custom classifier head was used again, this time with a 256-unit hidden layer with a ReLU activation function, followed by a 1-unit output layer with a sigmoid activation function. Dropout was added this time as well, with a dropout rate of 0.7. Training was done using binary cross entropy loss and an Adam optimizer. Early stopping kicked in at 15 epochs. Training progression can be seen below.
+
+![](images/ai_poster_training.png)
 
 In terms of performance for this model, an accuracy of 89.4% was achieved on the validation set and 90.6% on the test set, indicating that the model performed well at classifying images as harmful AI posters or not. This time only the one model was trained as the performance was satisfactory. Again, leveraging the pre-trained features from even the frozen ResNet-50 backbone proved to be effective for this task.
 
