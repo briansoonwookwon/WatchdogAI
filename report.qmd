@@ -8,6 +8,13 @@ format:
     toc: true
 ---
 
+<p style="text-align: center;">
+    <img src="images/WatchDog_AI.png" alt="Image 1" style="width: 45%; margin: 10px;">
+</p>
+<p style="text-align: center; font-size: 0.9em; color: gray;">
+    WatchDog AI Pipeline
+</p>
+
 ## Introduction
 
 Voter information is a crucial part of democratic processes. For this reason, groups like the one lead by Dr. Thessalia Merivaki and Dr. Mara Suttmann-Lea have been working on studying these communications. By tracking the social media content posted by Local and Sate Election Officials, they have been able to study the topics, type of information, and styles used by these officials. They have also been able to ensure the reliability of the information posted by these officials and make accionable recommendations on the communication strategies of these officials. However, due to the amount of content shared by the officials and the lack of resources available to them, the officials have been relying more and more on AI generated content to help them with their social media posts. While the content may be accurate, some poster present missespellings and other images don't look realistic enough. Thus, Dr. Merivaki and Dr. Suttmann-Lea have reached out to us to help them detect these AI generated images to later study if they are causing mistrust on the public.
