@@ -6,8 +6,8 @@ def main():
     parser.add_argument('image_path', type=str, help='Path to input image')
     parser.add_argument('--poster_threshold', type=float, default=0.5,
                         help='Poster detection threshold (default: 0.5)')
-    parser.add_argument('--ai_threshold', type=float, default=0.5,
-                        help='AI detection threshold (default: 0.5)')
+    parser.add_argument('--ai_threshold', type=float, default=0.75,
+                        help='AI detection threshold (default: 0.75)')
     args = parser.parse_args()
     
     # First stage: Poster detection

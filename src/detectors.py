@@ -2,7 +2,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from src.models import SimpleResNetCNN, AIDetectorResNet
-from transformers import AutoModelForImageClassification, AutoProcessor, ViTForImageClassification, ViTImageProcessor
+from transformers import AutoModelForImageClassification, AutoProcessor, ViTForImageClassification, ViTImageProcessor, ViTConfig
 import matplotlib.pyplot as plt
 import mmcv
 from mmengine.config import Config
@@ -64,58 +64,24 @@ class AI_Poster_Detector:
         return (1 if confidence >= threshold else 0, confidence)
 
 class AI_Non_Poster_Detector:
-    def __init__(self, model_path="models/non_poster_model/model.safetensors"):
+    def __init__(self, model_path="models/non_poster_model"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+        self.model = AutoModelForImageClassification.from_pretrained(model_path).to(self.device)
+        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.model.eval()
         
-        try:
-            # Check if the model file exists before attempting to use it
-            if os.path.exists(model_path):
-                # If we have safetensors module available
-                try:
-                    from safetensors.torch import load_file
-                    
-                    # Initialize model with 2 classes (fake/real)
-                    self.model = ViTForImageClassification.from_pretrained(
-                        "google/vit-large-patch16-224", 
-                        num_labels=2,
-                        ignore_mismatched_sizes=True
-                    ).to(self.device)
-                    
-                    # Load the weights if safetensors is available
-                    state_dict = load_file(model_path)
-                    self.model.load_state_dict(state_dict, strict=False)
-                    print("Successfully loaded custom weights from safetensors file")
-                    
-                except ImportError:
-                    print("Warning: safetensors package not found. Using pretrained model.")
-                    raise ImportError("safetensors package not found")
-                    
-            else:
-                # File doesn't exist, raise error to fall back to pretrained
-                print(f"Model file {model_path} not found. Using pretrained model.")
-                raise FileNotFoundError(f"Model file {model_path} not found")
-                
-            # Set up the image processor
-            self.processor = ViTImageProcessor.from_pretrained("google/vit-large-patch16-224")
-            self.fallback_mode = False
-            
-        except Exception as e:
-            print(f"Using pretrained model: {e}")
-            
-            # Skip loading weights and just use pretrained model
-            self.model = ViTForImageClassification.from_pretrained(
-                "google/vit-large-patch16-224", 
-                num_labels=2
-            ).to(self.device)
-            self.model.eval()
-            
-            # Set up the image processor
-            self.processor = ViTImageProcessor.from_pretrained("google/vit-large-patch16-224")
-            self.fallback_mode = True
-        
-    def predict(self, image_path, threshold=0.5):
+    def predict(self, image_path, threshold=0.75):
         image = Image.open(image_path).convert('RGB')
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)
+        
+        # with torch.no_grad():
+        #     outputs = self.model(**inputs)
+        #     logits = outputs.logits
+        #     probabilities = torch.softmax(logits, dim=1)
+        #     confidence, predicted_class = torch.max(probabilities, dim=1)
+            
+        # confidence = confidence.item()
+        # return (1 if confidence >= threshold else 0, confidence)
         
         with torch.no_grad():
             outputs = self.model(**inputs)
@@ -131,6 +97,7 @@ class AI_Non_Poster_Detector:
                 return (0, fake_prob)
             else:
                 return (1, real_prob)
+
 
 class ArtifactDetector:
     def __init__(self, config_file="models/htc_r50_artifact_final/htc_r50_fpn_1x_artifact.py", 
