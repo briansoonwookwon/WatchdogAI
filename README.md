@@ -32,7 +32,6 @@ python detection_pipeline.py <path_to_image> --poster_threshold <value> --ai_thr
 ├── 📁 data (🚫)     
 ├── 📁 models
 │   ├── 📁 AIDetectorResNet           
-│   ├── 📁 Simple3BlockCNN     
 │   ├── 📁 SimpleResNetCNN      
 │   ├── 📁 non_poster_model (🚫) 
 │   └── 📁 htc_r50_artifact_final           
